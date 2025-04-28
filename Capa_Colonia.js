@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Crea un pane personalizado para las colonias, con z-index para controlar su orden en el mapa
     if (!map.getPane('coloniasPane')) {
         map.createPane('coloniasPane');
-        map.getPane('coloniasPane').style.zIndex = 200;
+        map.getPane('coloniasPane').style.zIndex = 500;
     }
 
     let capaColonias = null;              // Guardará la capa con los polígonos de colonias
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 style: {
                     color: "yellow",   // Borde amarillo
                     weight: 2,         // Grosor del borde
-                    opacity: 0.7,
+                    opacity: 0.4,
                     fillOpacity: 0     // Sin relleno por defecto
                 },
                 onEachFeature: function (feature, layer) {
