@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var div = L.DomUtil.create("div", "legend-container");
             div.innerHTML = `
                 <div class="legend">
-                    <img src="img/simbol/Simbologia.jpg" alt="Simbología" style="width: 150px; height: auto;">
+                    <img src="img/simbol/Simbologi.png" alt="Simbología" style="width: 150px; height: auto;">
                 </div>`;
             return div;
         },
