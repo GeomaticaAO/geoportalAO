@@ -49,8 +49,8 @@ if (typeof L === "undefined") {
 
                   // Paleta de colores para cada categoría
                   const coloresPorCategoria = {
-                      "Muy alto": "#163664",
-                      "Alto": "#6AA6FC",
+                      "Muy alto": "#08810C",
+                      "Alto": "#97FE9A",
                       "Medio": "#EC7063",
                       "Bajo": "#922B21",
                       "Muy bajo": "#641E16",
