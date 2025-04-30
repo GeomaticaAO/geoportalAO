@@ -38,15 +38,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     fillOpacity: 0     // Sin relleno por defecto
                 },
                 onEachFeature: function (feature, layer) {
-                    // Verifica que el feature tenga el atributo COLONIA_UN
-                    if (feature.properties && feature.properties.COLONIA_UN) {
+                    // Verifica que el feature tenga el atributo NOMBRE
+                    if (feature.properties && feature.properties.NOMBRE) {
 
                         // Define el contenido del popup con un botón para ver estadísticas
                         var popupContent = `
                             <div class="popup">
-                                <b>Colonia:</b> ${feature.properties.COLONIA_UN}<br>
+                                <b>Colonia:</b> ${feature.properties.NOMBRE}<br>
                                 <div class="estadisticasBoton">
-                                    <button class="VerEstadisticas btn btn-danger" onclick="verEstadisticas('${feature.properties.COLONIA_UN}')">
+                                    <button class="VerEstadisticas btn btn-danger" onclick="verEstadisticas('${feature.properties.NOMBRE}')">
                                         Ver Estadísticas
                                     </button>
                                 </div>
@@ -111,10 +111,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let encontrado = false;
 
-        // Recorre cada capa buscando coincidencias por nombre usando COLONIA_UN
+        // Recorre cada capa buscando coincidencias por nombre usando NOMBRE
         capaColonias.eachLayer(function (layer) {
-            if (layer.feature.properties && layer.feature.properties.COLONIA_UN) {
-                let nombreEnMapa = layer.feature.properties.COLONIA_UN.trim().toLowerCase();
+            if (layer.feature.properties && layer.feature.properties.NOMBRE) {
+                let nombreEnMapa = layer.feature.properties.NOMBRE.trim().toLowerCase();
                 let nombreBuscado = nombreColonia.trim().toLowerCase();
 
                 // Si hay coincidencia exacta, selecciona la colonia
