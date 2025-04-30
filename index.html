@@ -25,6 +25,34 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <!-- Hoja de estilos personalizada del proyecto -->
     <link rel="stylesheet" href="style.css">
+    <!-- Estilos extra para el botón de consulta en el sidebar -->
+    <style>
+      /* Mantener la estructura de la barra lateral */
+      .sidebar-container {
+        /* Tus estilos para esta sección ya existentes */
+      }
+      
+      .sidebar-footer {
+        margin-top: 20px;
+      }
+      
+      /* Actualizamos el botón de "Consulta otros mapas" */
+      #consultaMapasBtn {
+        padding: 10px;
+        background-color: #922B21;
+        border: none;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+      }
+      
+      #consultaMapasBtn:hover {
+        background-color: #7a1f1a;
+      }
+    </style>
   </head>
 
   <body>
@@ -120,6 +148,10 @@
               </label>
             </div>
           </div>
+          <!-- Botón ubicado en la parte inferior de la barra lateral -->
+          <div class="sidebar-footer">
+            <button id="consultaMapasBtn">Consulta otros mapas</button>
+          </div>
         </div>
       </div>
       <!-- Mapa  -->
@@ -171,6 +203,32 @@
         } else {
           console.error("No se encontró el checkbox para encender/apagar la capa IDS_AO.");
         }
+
+        // Agregar evento al botón "Consulta otros mapas"
+        var consultaMapasBtn = document.getElementById("consultaMapasBtn");
+        if (consultaMapasBtn) {
+          consultaMapasBtn.addEventListener("click", function() {
+            window.open(
+              "https://docs.google.com/spreadsheets/d/1JMOStdbWKtwz6F771RIo3uhjI722qQd6/edit?usp=drive_link&ouid=106018034216375906208&rtpof=true&sd=true",
+              "_blank"
+            );
+          });
+        }
+      });
+    </script>
+    
+    <!-- Script para el botón de toggle del panel lateral -->
+    <script>
+      // Obtenemos el contenedor que agrupa el panel y el botón
+      const sidebarContainer = document.getElementById('sidebarContainer');
+      const toggleBtn = document.getElementById('toggleBtn');
+
+      toggleBtn.addEventListener('click', () => {
+        // Alterna la clase 'oculto' en el contenedor lateral
+        sidebarContainer.classList.toggle('oculto');
+        setTimeout(() => {
+          // Acción extra, si se requiere
+        }, 300);
       });
     </script>
   </body>
