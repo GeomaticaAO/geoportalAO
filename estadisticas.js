@@ -1,150 +1,101 @@
-// Función para mostrar estadísticas en una ventana modal de Bootstrap
-function verEstadisticas(nombreColonia) {
-    // Cargar el archivo GeoJSON con datos de todas las colonias
-    fetch("archivos/vectores/colonias_wgs84_geojson_renombrado.geojson")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Error al cargar el archivo GeoJSON: " + response.statusText);
-            }
-            return response.json(); // Convertir la respuesta en objeto JSON
-        })
-        .then(data => {
-            // Buscar la colonia por nombre dentro del GeoJSON
-            let coloniaEncontrada = data.features.find(
-                feature => feature.properties.COLONIA_UN.trim().toLowerCase() === nombreColonia.trim().toLowerCase()
-            );
+document.addEventListener("DOMContentLoaded", function () {
+    function verEstadisticas(nombreColonia) {
+        fetch("archivos/vectores/colonias_wgs84_geojson_renombrado.geojson")
+            .then(response => response.ok ? response.json() : Promise.reject("Error al cargar el archivo GeoJSON"))
+            .then(data => {
+                let coloniaEncontrada = data.features.find(feature => 
+                    feature.properties.NOMBRE.trim().toLowerCase() === nombreColonia.trim().toLowerCase());
 
-            // Si no se encuentra la colonia, mostrar mensaje y salir
-            if (!coloniaEncontrada) {
-                alert("No se encontraron estadísticas para la colonia seleccionada.");
-                return;
-            }
-
-            // Acceder a las propiedades de la colonia
-            let props = coloniaEncontrada.properties;
-
-            // Actualizar el título del modal con el nombre de la colonia
-            document.getElementById("estadisticasModalLabel").innerText = `Estadísticas de ${nombreColonia}`;
-
-            // Construir la tabla con estadísticas básicas solo si el dato existe
-            let rows = [];
-            if (props.xPOBTOT !== undefined && props.xPOBTOT !== null) {
-                rows.push(`<tr><td><strong>Población Total:</strong></td><td>${props.xPOBTOT}</td></tr>`);
-            }
-            if (props.xPEA !== undefined && props.xPEA !== null) {
-                rows.push(`<tr><td><strong>Población Económicamente Activa Total:</strong></td><td>${props.xPEA}</td></tr>`);
-            }
-            if (props.x_60MAS !== undefined && props.x_60MAS !== null) {
-                rows.push(`<tr><td><strong>Población 60 años y más Total:</strong></td><td>${props.x_60MAS}</td></tr>`);
-            }
-            if ((props.p_0A11 !== undefined && props.p_0A11 !== null) || (props.p_0A11 !== undefined && props.p_0A11 !== null)) {
-                let poblacionInfantil = props.p_0A11 ?? props.p_0A11;
-                rows.push(`<tr><td><strong>Población Infantil:</strong></td><td>${poblacionInfantil}</td></tr>`);
-            }
-            if (props.xTVIVHAB !== undefined && props.xTVIVHAB !== null) {
-                rows.push(`<tr><td><strong>Total de Viviendas Particulares Habitadas:</strong></td><td>${props.xTVIVHAB}</td></tr>`);
-            }
-            let totalStats = `<table class="table table-bordered"><tbody>${rows.join("")}</tbody></table>`;
-            document.getElementById("estadisticasInfo").innerHTML = totalStats;
-
-            // Preparar los datos para el gráfico de pirámide poblacional incluyendo solo estadísticas disponibles
-            let chartLabels = [];
-            let chartDataMasculino = [];
-            let chartDataFemenino = [];
-
-            // Población Total
-            if ((props.xPOBMAS !== undefined && props.POBMAS !== null) || (props.xPOBFEM !== undefined && props.xPOBFEM !== null)) {
-                chartLabels.push("Población Total");
-                chartDataMasculino.push( -(props.xPOBMAS ?? 0) );
-                chartDataFemenino.push( props.xPOBFEM ?? 0 );
-            }
-            // Población Económicamente Activa
-            if ((props.PEA_M !== undefined && props.xPEA_M !== null) || (props.xPEA_F !== undefined && props.xPEA_F !== null)) {
-                chartLabels.push("Población Económicamente Activa");
-                chartDataMasculino.push( -(props.xPEA_M ?? 0) );
-                chartDataFemenino.push( props.xPEA_F ?? 0 );
-            }
-            // Población 60 años y más
-            if ((props.x_60MAS_M !== undefined && props.x_60MAS_M !== null) || (props.x_60MAS_F !== undefined && props.x_60MAS_F !== null)) {
-                chartLabels.push("Población 60 años y más");
-                chartDataMasculino.push( -(props.x_60MAS_M ?? 0) );
-                chartDataFemenino.push( props.x_60MAS_F ?? 0 );
-            }
-
-            // Si no hay datos para graficar, simplemente oculta el canvas; de lo contrario, muestra y grafica
-            if (chartLabels.length === 0) {
-                document.getElementById("estadisticasChart").style.display = "none";
-            } else {
-                document.getElementById("estadisticasChart").style.display = "block";
-                // Obtener el contexto del canvas para dibujar el gráfico
-                let ctx = document.getElementById("estadisticasChart").getContext("2d");
-
-                // Destruir el gráfico anterior si existe
-                if (window.estadisticasChart && typeof window.estadisticasChart.destroy === "function") {
-                    window.estadisticasChart.destroy();
+                if (!coloniaEncontrada) {
+                    alert("No se encontraron estadísticas para la colonia seleccionada.");
+                    return;
                 }
 
-                // Crear el gráfico tipo pirámide poblacional 
-                window.estadisticasChart = new Chart(ctx, {
-                    type: "bar",
-                    data: {
-                        labels: chartLabels,
-                        datasets: [
-                            {
-                                label: "Masculino",
-                                data: chartDataMasculino,
-                                backgroundColor: "rgba(54, 162, 235, 0.6)",
-                                borderColor: "rgba(54, 162, 235, 1)",
-                                borderWidth: 1
-                            },
-                            {
-                                label: "Femenino",
-                                data: chartDataFemenino,
-                                backgroundColor: "rgba(255, 99, 132, 0.6)",
-                                borderColor: "rgba(255, 99, 132, 1)",
-                                borderWidth: 1
-                            }
-                        ]
-                    },
-                    options: {
-                        indexAxis: 'y', // Hace el gráfico horizontal
-                        responsive: true,
-                        scales: {
-                            x: {
-                                stacked: true,
-                                min: -Math.max(...chartDataMasculino.map(Math.abs)) * 1.2,
-                                max: Math.max(...chartDataFemenino) * 1.2,
-                                ticks: {
-                                    callback: function(value) {
-                                        // Redondea y muestra solo la parte entera
-                                        return Math.abs(value).toFixed(0);
-                                    }
-                                }
-                            },
-                            y: {
-                                stacked: true
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        // Redondea el valor en el tooltip
-                                        return `${tooltipItem.dataset.label}: ${Math.abs(tooltipItem.raw).toFixed(0)}`;
-                                    }
-                                }
-                            }
-                        }
+                let props = coloniaEncontrada.properties;
+
+                // Aplicar Montserrat Medium dinámicamente
+                const estadisticasModalLabel = document.getElementById("estadisticasModalLabel");
+                const estadisticasInfo = document.getElementById("estadisticasInfo");
+
+                estadisticasModalLabel.style.fontFamily = "Montserrat, sans-serif";
+                estadisticasModalLabel.style.fontWeight = "500";
+                estadisticasInfo.style.fontFamily = "Montserrat, sans-serif";
+                estadisticasInfo.style.fontWeight = "500";
+
+                estadisticasModalLabel.innerText = `Estadísticas de ${nombreColonia}`;
+
+                // Construir la tabla de estadísticas
+                let rows = [];
+                const estadisticas = [
+                    { label: "Población Total", value: props.pob_tot_p },
+                    { label: "Población de 0 a 2 años", value: props._0_2_p },
+                    { label: "Población de 3 a 5 años", value: props._3_5_p },
+                    { label: "Población de 6 a 11 años", value: props._6_11_p },
+                    { label: "Población de 12 a 14 años", value: props._12_14_p },
+                    { label: "Población de 15 a 64 años", value: props._15_64_p },
+                    { label: "Población de 65 años y más", value: props._65mas_p },
+                    { label: "Total de Viviendas Habitadas", value: props.viv_hab_p }
+                ];
+
+                estadisticas.forEach(stat => {
+                    if (stat.value !== undefined && stat.value !== null) {
+                        rows.push(`<tr><td><strong>${stat.label}:</strong></td><td>${stat.value}</td></tr>`);
                     }
                 });
 
-            }
+                estadisticasInfo.innerHTML = `<table class="table table-bordered"><tbody>${rows.join("")}</tbody></table>`;
 
-            // Mostrar el modal de Bootstrap con la información cargada
-            let estadisticasModal = new bootstrap.Modal(document.getElementById("estadisticasModal"));
-            estadisticasModal.show();
-        })
-        .catch(error => console.error("Error al cargar estadísticas:", error));
-}
+                // Generar gráfica poblacional
+                let chartLabels = [], chartDataMasculino = [], chartDataFemenino = [];
+                const gruposEdad = [
+                    { label: "Población Total", male: props.xPOBMAS, female: props.xPOBFEM },
+                    { label: "Población Económicamente Activa", male: props.xPEA_M, female: props.xPEA_F },
+                    { label: "Población 60 años y más", male: props.x_60MAS_M, female: props.x_60MAS_F }
+                ];
 
-window.verEstadisticas = verEstadisticas;
+                gruposEdad.forEach(grupo => {
+                    if (grupo.male || grupo.female) {
+                        chartLabels.push(grupo.label);
+                        chartDataMasculino.push(-(grupo.male ?? 0));
+                        chartDataFemenino.push(grupo.female ?? 0);
+                    }
+                });
+
+                const chartCanvas = document.getElementById("estadisticasChart");
+                if (chartLabels.length === 0) {
+                    chartCanvas.style.display = "none";
+                } else {
+                    chartCanvas.style.display = "block";
+                    const ctx = chartCanvas.getContext("2d");
+
+                    // Destruir el gráfico anterior si existe
+                    if (window.estadisticasChart) {
+                        window.estadisticasChart.destroy();
+                    }
+
+                    window.estadisticasChart = new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: chartLabels,
+                            datasets: [
+                                { label: "Masculino", backgroundColor: "rgba(0, 123, 255, 0.6)", data: chartDataMasculino },
+                                { label: "Femenino", backgroundColor: "rgba(255, 99, 132, 0.6)", data: chartDataFemenino }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                x: { stacked: true },
+                                y: { stacked: true }
+                            }
+                        }
+                    });
+                }
+
+                new bootstrap.Modal(document.getElementById("estadisticasModal")).show();
+            })
+            .catch(error => console.error("Error al cargar estadísticas:", error));
+    }
+
+    window.verEstadisticas = verEstadisticas;
+});
