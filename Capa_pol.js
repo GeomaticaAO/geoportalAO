@@ -1,129 +1,106 @@
-// Capa_pol.js
-
-// Verificar que Leaflet esté disponible
+// Verificar que Leaflet esté disponible antes de ejecutar el script
 if (typeof L === "undefined") {
-    console.error("Leaflet no está cargado correctamente. Verifica que la biblioteca se haya incluido en index.html.");
-  } else {
-    document.addEventListener("DOMContentLoaded", function () {
+  console.error("Leaflet no está cargado correctamente. Verifica que la biblioteca se haya incluido en index.html.");
+} else {
+  document.addEventListener("DOMContentLoaded", function () {
       console.log("DOM cargado, iniciando carga del GeoJSON...");
-  
-      // Verificar que 'map' ya esté definido (por ejemplo, en mapabase.js)
+
+      // Verificar que 'map' ya esté definido
       if (typeof map === "undefined") {
-        console.error("El objeto 'map' no está definido. Verifica que se haya inicializado en otro archivo.");
-        return;
+          console.error("El objeto 'map' no está definido. Verifica que se haya inicializado en otro archivo.");
+          return;
       }
-  
+
       // Si existe un grupo de capas previo, lo removemos
       if (map.geojsonBaseLayerGroup) {
-        map.removeLayer(map.geojsonBaseLayerGroup);
+          map.removeLayer(map.geojsonBaseLayerGroup);
       }
-      // Creamos (o reasignamos) un grupo de capas exclusivo para el GeoJSON
+
+      // Creamos un grupo de capas exclusivo para el GeoJSON
       map.geojsonBaseLayerGroup = L.layerGroup().addTo(map);
-  
-      // Declarar (o re-declarar) la variable global para la capa IDS_AO
+
+      // Declarar la variable global para la capa IDS_AO
       IDS_AO_layer = null;
-  
+
       // Deshabilitar el checkbox hasta que la capa se cargue
       var toggleCheckbox = document.getElementById("toggleIDSCheckbox");
       if (toggleCheckbox) {
-        toggleCheckbox.disabled = true;
+          toggleCheckbox.disabled = true;
       }
-  
+
       // Función para cargar el GeoJSON
       function loadGeoJSON(url) {
-        console.log("Número de capas previas en geojsonBaseLayerGroup antes de limpiar:", map.geojsonBaseLayerGroup.getLayers().length);
-        map.geojsonBaseLayerGroup.clearLayers();
-        IDS_AO_layer = null; // Reiniciar la variable global
-        console.log("Número de capas tras limpiar:", map.geojsonBaseLayerGroup.getLayers().length);
-  
-        // Agregar un parámetro de cache busting para evitar el uso de versiones cacheadas
-        const urlConCacheBust = url + "?v=" + Date.now();
-        console.log(`Cargando GeoJSON desde: ${urlConCacheBust}`);
-  
-        fetch(urlConCacheBust)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Error al cargar el archivo: ${response.statusText}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log("GeoJSON cargado:", data);
-  
-            if (!data || !data.features || data.features.length === 0) {
-              throw new Error("El archivo GeoJSON no contiene 'features' válidos.");
-            }
-  
-            // Paleta de colores para cada categoría
-            const coloresPorCategoria = {
-              "Muy alto": "#163664",
-              "Alto": "#6AA6FC",
-              "Medio": "#EC7063",
-              "Bajo": "#922B21",
-              "Muy bajo": "#641E16",
-            };
-  
-            // Crear la capa GeoJSON y asignar estilos a cada feature.
-            IDS_AO_layer = L.geoJSON(data, {
-              style: function (feature) {
-                // Obtener la categoría y limpiarla:
-                let categoria = (feature.properties?.e_idsm || "Sin información").trim();
-  
-                // Si la categoría es "Sin información", no dibujamos borde ni relleno
-                if (categoria === "Sin información") {
-                  return {
-                    stroke: false,
-                    fill: false,
+          console.log("Número de capas previas en geojsonBaseLayerGroup antes de limpiar:", map.geojsonBaseLayerGroup.getLayers().length);
+          map.geojsonBaseLayerGroup.clearLayers();
+          IDS_AO_layer = null;
+
+          // Agregar un parámetro de cache busting para evitar el uso de versiones cacheadas
+          const urlConCacheBust = url + "?v=" + Date.now();
+          console.log(`Cargando GeoJSON desde: ${urlConCacheBust}`);
+
+          fetch(urlConCacheBust)
+              .then(response => response.ok ? response.json() : Promise.reject(`Error al cargar el archivo: ${response.statusText}`))
+              .then(data => {
+                  console.log("GeoJSON cargado:", data);
+
+                  if (!data || !data.features || data.features.length === 0) {
+                      throw new Error("El archivo GeoJSON no contiene 'features' válidos.");
+                  }
+
+                  // Paleta de colores para cada categoría
+                  const coloresPorCategoria = {
+                      "Muy alto": "#163664",
+                      "Alto": "#6AA6FC",
+                      "Medio": "#EC7063",
+                      "Bajo": "#922B21",
+                      "Muy bajo": "#641E16",
                   };
-                }
-                // Obtener el color según la categoría (o gris si no se encuentra)
-                let color = coloresPorCategoria[categoria] || "gray";
-                return {
-                  color: color,
-                  weight: 2,
-                  fillOpacity: 0.6,
-                };
-              },
-              onEachFeature: function (feature, layer) {
-                // Definir la información del popup
-                var popupContent = `<h3>${feature.properties?.name || "Sin título"}</h3>
-                                    <p><strong>e_idsm:</strong> ${feature.properties?.e_idsm || "No especificado"}</p>`;
-                layer.bindPopup(popupContent);
-  
-                // Prevenir la propagación de clics en esta feature para evitar que afecte la UI (por ejemplo, el navbar)
-                if (L && L.DomEvent && typeof L.DomEvent.disableClickPropagation === "function") {
-                  L.DomEvent.disableClickPropagation(layer);
-                }
-  
-                // Eventos para resaltar la feature cuando se pasa el ratón
-                layer.on("mouseover", function () {
-                  layer.setStyle({ fillOpacity: 1, weight: 3 });
-                });
-                layer.on("mouseout", function () {
-                  layer.setStyle({ fillOpacity: 0.6, weight: 2 });
-                });
-              }
-            });
-  
-            // Agregar la capa al grupo exclusivo y moverla al fondo
-            map.geojsonBaseLayerGroup.addLayer(IDS_AO_layer);
-            IDS_AO_layer.eachLayer(function (layer) {
-              layer.bringToBack();
-            });
-  
-            console.log("Capa GeoJSON cargada, actualizada y movida al fondo correctamente.");
-  
-            // Habilitar el checkbox para que el usuario pueda interactuar
-            if (toggleCheckbox) {
-              toggleCheckbox.disabled = false;
-            }
-          })
-          .catch(error => {
-            console.error("Error al cargar el GeoJSON:", error);
-          });
+
+                  // Crear la capa GeoJSON y asignar estilos
+                  IDS_AO_layer = L.geoJSON(data, {
+                      style: feature => {
+                          let categoria = (feature.properties?.e_idsm || "Sin información").trim();
+                          if (categoria === "Sin información") {
+                              return { stroke: false, fill: false };
+                          }
+                          return { color: coloresPorCategoria[categoria] || "gray", weight: 2, fillOpacity: 0.6 };
+                      },
+                      onEachFeature: (feature, layer) => {
+                          let popupContent = `<h3>${feature.properties?.name || "Sin título"}</h3>
+                                              <p><strong>e_idsm:</strong> ${feature.properties?.e_idsm || "No especificado"}</p>`;
+                          layer.bindPopup(popupContent);
+
+                          if (L.DomEvent && typeof L.DomEvent.disableClickPropagation === "function") {
+                              L.DomEvent.disableClickPropagation(layer);
+                          }
+
+                          // Eventos de resaltado
+                          layer.on("mouseover", () => layer.setStyle({ fillOpacity: 1, weight: 3 }));
+                          layer.on("mouseout", () => layer.setStyle({ fillOpacity: 0.6, weight: 2 }));
+                      }
+                  });
+
+                  // Agregar la capa al grupo exclusivo y moverla al fondo
+                  map.geojsonBaseLayerGroup.addLayer(IDS_AO_layer);
+                  IDS_AO_layer.eachLayer(layer => layer.bringToBack());
+
+                  console.log("Capa GeoJSON cargada, actualizada y movida al fondo correctamente.");
+
+                  // Habilitar el checkbox para que el usuario pueda interactuar
+                  if (toggleCheckbox) {
+                      toggleCheckbox.disabled = false;
+                  }
+              })
+              .catch(error => console.error("Error al cargar el GeoJSON:", error));
       }
-  
+
       // Ejecutar la carga del GeoJSON
       loadGeoJSON("archivos/vectores/IDS_AO.geojson");
-    });
-  }
+
+      // Aplicar fuente Montserrat Medium dinámicamente
+      document.querySelectorAll(".lista-capas li span, .lista-capas li label, .form-check-label").forEach(element => {
+          element.style.fontFamily = "Montserrat, sans-serif";
+          element.style.fontWeight = "400";
+      });
+  });
+}
