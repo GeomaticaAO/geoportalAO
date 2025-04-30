@@ -26,42 +26,42 @@ document.addEventListener("DOMContentLoaded", function () {
     listaCapas.className = "lista-capas";
     controlCapasContainer.appendChild(listaCapas);
   
-    // Diccionario de íconos personalizados para cada capa
+// Diccionario de íconos personalizados para cada capa
     const iconosCapas = {
       "Centros de Atencion y Cuidado Infantil": L.icon({
         iconUrl: "img/icono/CACI.png",
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [40, 40],
+        iconAnchor: [30, 30],
         popupAnchor: [0, -32]
       }),
       "Casas de Adulto Mayor": L.icon({
         iconUrl: "img/icono/CAM.png",
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [40, 40],
+        iconAnchor: [30, 30],
         popupAnchor: [0, -32]
       }),
       "Centros de Desarrollo Comunitario": L.icon({
         iconUrl: "img/icono/CDC.png",
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [40, 40],
+        iconAnchor: [30, 30],
         popupAnchor: [0, -32]
       }),
       "Centros Culturales": L.icon({
         iconUrl: "img/icono/CC.png",
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [40, 40],
+        iconAnchor: [30, 30],
         popupAnchor: [0, -32]
       }),
       "Centros Interactivos": L.icon({
         iconUrl: "img/icono/CDC_CI.png",
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [40, 40],
+        iconAnchor: [30, 30],
         popupAnchor: [0, -32]
       }),
       "Centros de Artes y Oficios": L.icon({
         iconUrl: "img/icono/CAO.png",
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [40, 40],
+        iconAnchor: [30, 30],
         popupAnchor: [0, -32]
       })
     };
