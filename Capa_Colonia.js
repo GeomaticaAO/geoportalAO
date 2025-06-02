@@ -32,16 +32,13 @@ document.addEventListener("DOMContentLoaded", function () {
             capaColonias = L.geoJSON(data, {
                 pane: 'coloniasPane', // Usa el pane personalizado
                 style: {
-                    color: "yellow",   // Borde amarillo
-                    weight: 2,         // Grosor del borde
-                    opacity: 0.4,
-                    fillOpacity: 0     // Sin relleno por defecto
+                    color: "red",   // Bordes rojos por defecto
+                    weight: 3,      // Grosor del borde
+                    opacity: 0.7,
+                    fillOpacity: 0  // Sin relleno al inicio
                 },
                 onEachFeature: function (feature, layer) {
-                    // Verifica que el feature tenga el atributo NOMBRE
                     if (feature.properties && feature.properties.NOMBRE) {
-
-                        // Define el contenido del popup con un botón para ver estadísticas
                         var popupContent = `
                             <div class="popup">
                                 <b>Colonia:</b> ${feature.properties.NOMBRE}<br>
@@ -52,57 +49,59 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </div>
                             </div>
                         `;
-
-                        // Asocia el popup al polígono
                         layer.bindPopup(popupContent);
 
-                        // Asocia la selección visual al hacer clic en el polígono
+                        // Evento de selección de colonia
                         layer.on("click", function () {
                             seleccionarColonia(layer);
                         });
                     }
                 }
-            }).addTo(map); // Agrega la capa al mapa
+            }).addTo(map);
 
-            // Función temporal para mostrar estadísticas al hacer clic en el botón
-            function verEstadisticas(colonia) {
-                alert(`Mostrando estadísticas de la colonia: ${colonia}`);
-            }
-
-            // Ajusta la vista del mapa para mostrar toda la capa (solo una vez)
             if (!vistaInicialAplicada) {
                 map.fitBounds(capaColonias.getBounds());
                 vistaInicialAplicada = true;
             }
         })
-        .catch(error => console.error("Error al cargar el GeoJSON:", error)); // Muestra errores de carga
+        .catch(error => console.error("Error al cargar el GeoJSON:", error));
 
-    // Función que aplica estilo y zoom a una colonia seleccionada
+    // 🔹 Función mejorada: Aplica sombreado solo cuando se realiza el zoom y lo restablece al seleccionar otra colonia
     function seleccionarColonia(layer) {
-        // Si ya hay una colonia seleccionada, resetea su estilo
-        if (coloniaSeleccionada) {
-            coloniaSeleccionada.setStyle({ fillOpacity: 0 });
-        }
+        // Restablece todas las colonias al estado inicial (borde rojo, sin opacidad)
+        capaColonias.eachLayer(function (capa) {
+            capa.setStyle({ fillOpacity: 0, color: "red", weight: 3 });
+        });
 
-        // Aplica un relleno suave a la colonia actual para resaltarla
-        layer.setStyle({ fillOpacity: 0.15 });
-        coloniaSeleccionada = layer;
+        // Aplica borde amarillo más grueso a la colonia seleccionada sin sombreado
+        layer.setStyle({ color: "yellow", weight: 6, fillOpacity: 0 });
 
-        // Obtiene los límites del polígono seleccionado
+        // Asegura que la colonia seleccionada se muestre por encima de las demás
+        layer.bringToFront();
+
+        coloniaSeleccionada = layer; // Guarda la nueva selección
+
+        // Ajusta la vista del mapa a la colonia seleccionada
         let bounds = layer.getBounds();
-
         if (window.innerWidth > 768) {
-            // En pantallas grandes, ajusta la vista dejando espacio al panel izquierdo
             map.fitBounds(bounds, { paddingTopLeft: [300, 0], paddingBottomRight: [0, 0] });
         } else {
-            // En pantallas pequeñas (móviles), centra y aplica zoom
             map.setView(bounds.getCenter(), 15);
         }
 
-        layer.openPopup(); // Abre el popup asociado a la colonia
+        // Aplica sombreado a las demás colonias solo después de realizar el zoom
+        setTimeout(() => {
+            capaColonias.eachLayer(function (capa) {
+                if (capa !== layer) { // No afecta la colonia seleccionada
+                    capa.setStyle({ fillOpacity: 0.5, color: "gray", weight: 3 }); // Opacidad gris al 50%
+                }
+            });
+        }, 300); // Se activa justo después del zoom
+
+        layer.openPopup(); // Abre el popup de la colonia seleccionada
     }
 
-    // Función global que permite hacer zoom a una colonia desde otra parte del código (ej: buscador)
+    // Función global para hacer zoom a una colonia desde otra parte del código (ej: buscador)
     window.zoomAColonia = function (nombreColonia) {
         if (!capaColonias) {
             console.warn("La capa de colonias aún no se ha cargado.");
@@ -111,13 +110,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let encontrado = false;
 
-        // Recorre cada capa buscando coincidencias por nombre usando NOMBRE
+        // Busca la colonia por nombre y selecciona la que coincide
         capaColonias.eachLayer(function (layer) {
             if (layer.feature.properties && layer.feature.properties.NOMBRE) {
                 let nombreEnMapa = layer.feature.properties.NOMBRE.trim().toLowerCase();
                 let nombreBuscado = nombreColonia.trim().toLowerCase();
 
-                // Si hay coincidencia exacta, selecciona la colonia
                 if (nombreEnMapa === nombreBuscado) {
                     seleccionarColonia(layer);
                     encontrado = true;
@@ -125,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Si no se encontró ninguna coincidencia, muestra advertencia
         if (!encontrado) {
             console.warn(`No se encontró la colonia: ${nombreColonia}`);
         }
