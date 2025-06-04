@@ -1,4 +1,4 @@
-//Cargar una variable global para el mapa y la configuración inicial
+// Crear una variable global para el mapa y la configuración inicial
 var map;
 var configInicial = {
     center: [19.344796609, -99.238588729], // Coordenadas iniciales
@@ -49,30 +49,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log("Mapa inicializado correctamente.");
 
-    /** 🔹 **Agregar botón "Actualizar" con ícono de casita en gris** */
+    // 🔹 **Agregar botón "Actualizar" con ícono de casita en gris**
     var reloadButton = L.control({ position: 'topright' });
 
     reloadButton.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-        
-        // **Ícono de casita en gris (asegúrate de que la imagen existe en esta ruta)**
         div.innerHTML = '<img src="img/icons/home-gray-icon.png" alt="Actualizar" style="width: 35px; cursor: pointer;">';
-        
         div.style.backgroundColor = 'white';
         div.style.padding = '5px';
         div.style.borderRadius = '4px';
-        div.style.marginTop = '5px'; // Espacio debajo del cambio de mapa
-        
+        div.style.marginTop = '5px';
         div.onclick = function () {
-            location.reload(); // Recarga la página completamente (Ctrl + R)
+            location.reload(); // Recarga la página completamente
         };
-
         return div;
     };
 
     map.addControl(reloadButton);
 
-    /** 🔹 **Función para agregar la capa límite de la alcaldía** */
+    // 🔹 **Función para agregar la capa límite de la alcaldía**
     function agregarLimiteAlcaldia() {
         fetch("archivos/vectores/limite_alcaldia.geojson")
             .then(response => response.ok ? response.json() : Promise.reject("Error al cargar limite_alcaldia"))
@@ -93,4 +88,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // **Llamar la función para asegurar que la capa límite se carga tras la recarga**
     agregarLimiteAlcaldia();
+
+    // 🔹 **Agregar imagen de simbología en la esquina inferior derecha**
+    var simboloControl = L.control({ position: 'bottomright' });
+
+    simboloControl.onAdd = function(map) {
+        var div = L.DomUtil.create('div', 'leaflet-control-symbol'); 
+        div.innerHTML = '<img src="img/simbol/Simbologi.png" alt="Simbología" style="width: 200px;">'; 
+        div.style.backgroundColor = 'white';
+        div.style.padding = '5px';
+        div.style.borderRadius = '4px';
+        div.style.border = '1px solid #ccc';
+        return div;
+    };
+
+    simboloControl.addTo(map);
 });
