@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     simboloControl.onAdd = function(map) {
         var div = L.DomUtil.create('div', 'leaflet-control-symbol'); 
-        div.innerHTML = '<img src="img/simbol/Simbologi.png" alt="Simbología" style="width: 200px;">'; 
+        div.innerHTML = '<img src="img/simbol/Simbologi.png" alt="Simbología" style="width: 150px;">'; 
         div.style.backgroundColor = 'white';
         div.style.padding = '5px';
         div.style.borderRadius = '4px';
