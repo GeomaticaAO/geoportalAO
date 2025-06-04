@@ -1,55 +1,78 @@
-// Crear una variable global para el mapa (será usada en otros scripts)
+//Cargar una variable global para el mapa y la configuración inicial
 var map;
+var configInicial = {
+    center: [19.344796609, -99.238588729], // Coordenadas iniciales
+    zoom: 14,
+    baseLayer: null // Se guardará la capa base inicial
+};
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Verifica si la librería Leaflet está disponible
     if (typeof L === "undefined") {
         console.error("Leaflet no se ha cargado correctamente.");
         return;
     }
 
-    // Inicializa el mapa centrado en una ubicación específica
+    // Inicializar el mapa
     map = L.map('map', {
-        center: [19.344796609, -99.238588729], // Coordenadas iniciales
-        zoom: 14,
+        center: configInicial.center,
+        zoom: configInicial.zoom,
         minZoom: 10,
         maxZoom: 23,
         zoomControl: false,
         tap: false
     });
 
-    // Capa base satelital
+    // Agregar capas base
     var satelital = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '&copy; OpenStreetMap contributors',
         minZoom: 10,
         maxZoom: 23
     }).addTo(map);
 
-    // Capa base Street
     var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         minZoom: 10,
         maxZoom: 19
     });
 
-    // Agregar control de capas para cambiar entre satelital y Street
     var baseMaps = {
         "Mapa Satelital": satelital,
         "Mapa Street": street
     };
+
+    configInicial.baseLayer = satelital;
+
     L.control.layers(baseMaps).addTo(map);
 
-    // Agregar control de zoom personalizado en la esquina superior derecha
-    L.control.zoom({
-        position: 'topright'
-    }).addTo(map);
+    // Agregar control de zoom en la esquina superior derecha
+    L.control.zoom({ position: 'topright' }).addTo(map);
 
-    console.log("Mapa inicializado correctamente, listo para capas adicionales.");
+    console.log("Mapa inicializado correctamente.");
 
-    /** =====================================
-     * Agregar límite de la alcaldía con contorno rojo y sin relleno
-     * ==================================== */
+    /** 🔹 **Agregar botón "Actualizar" con ícono de casita en gris** */
+    var reloadButton = L.control({ position: 'topright' });
 
+    reloadButton.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        
+        // **Ícono de casita en gris (asegúrate de que la imagen existe en esta ruta)**
+        div.innerHTML = '<img src="img/icons/home-gray-icon.png" alt="Actualizar" style="width: 35px; cursor: pointer;">';
+        
+        div.style.backgroundColor = 'white';
+        div.style.padding = '5px';
+        div.style.borderRadius = '4px';
+        div.style.marginTop = '5px'; // Espacio debajo del cambio de mapa
+        
+        div.onclick = function () {
+            location.reload(); // Recarga la página completamente (Ctrl + R)
+        };
+
+        return div;
+    };
+
+    map.addControl(reloadButton);
+
+    /** 🔹 **Función para agregar la capa límite de la alcaldía** */
     function agregarLimiteAlcaldia() {
         fetch("archivos/vectores/limite_alcaldia.geojson")
             .then(response => response.ok ? response.json() : Promise.reject("Error al cargar limite_alcaldia"))
@@ -57,35 +80,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 L.geoJSON(data, {
                     style: function () {
                         return {
-                            color: "#BB1400", // Contorno rojo
-                            weight: 2, // Grosor del borde
-                            fillOpacity: 0 // Sin relleno
+                            color: "#BB1400",
+                            weight: 2,
+                            fillOpacity: 0
                         };
                     }
-                }).addTo(map).bringToBack(); // Enviar la capa al fondo
+                }).addTo(map).bringToBack();
                 console.log("Capa límite_alcaldía cargada correctamente.");
             })
             .catch(error => console.error("Error al cargar limite_alcaldia:", error));
     }
 
-    // Llamar a la función para agregar la capa límite de la alcaldía
+    // **Llamar la función para asegurar que la capa límite se carga tras la recarga**
     agregarLimiteAlcaldia();
-
-    /** =====================================
-     * Agregar botón de simbología IDS_AO
-     * ==================================== */
-    var legendControl = L.Control.extend({
-        options: { position: "bottomright" },
-        onAdd: function () {
-            var div = L.DomUtil.create("div", "legend-container");
-            div.innerHTML = `
-                <div class="legend">
-                    <img src="img/simbol/Simbologi.png" alt="Simbologi" style="width: 150px; height: auto;">
-                </div>`;
-            return div;
-        },
-    });
-
-    // Agregar la leyenda al mapa
-    map.addControl(new legendControl());
 });
