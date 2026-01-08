@@ -17,7 +17,10 @@
      height: 100%;
      overflow: hidden; /* Evita scroll extra */
      font-family: "Montserrat";
-     font-weight: 700;
+     font-weight: 500;
+     margin: 0;
+     padding: 0;
+     background-color: rgb(84, 0, 0);
    }
    
    /* ======================================
@@ -25,15 +28,24 @@
       ====================================== */
 
     .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
         background-color: rgb(84, 0, 0);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        flex-wrap: wrap; /* Permite que el menú se ajuste en móviles */
-        overflow: visible; /* Evita que el menú colapsado desaparezca */
+        flex-wrap: wrap;
+        overflow: visible;
         padding: 0.5em 1em;
         color: white;
         height: auto;
+        z-index: 2000;
+        min-height: 60px;
+        margin: 0;
+        border: none;
+        border-bottom: none;
       }
    
    .navbar-brand {
@@ -102,26 +114,47 @@
       Sidebar (panel lateral) y botón toggle
       ====================================== */
    .sidebar-container {
-     position: absolute;
-     top: 0;
+     position: fixed;
+     top: 80px;
      left: 0;
-     width: 300px;
-     height: 100%;
-     z-index: 10;
+     width: 340px;
+     height: calc(100vh - 80px);
+     z-index: 500;
      transition: transform 0.3s ease;
-     transform: translateX(0); 
+     transform: translateX(0);
+     overflow-y: auto;
+     margin: 0;
+     padding: 0;
+     border: none;
+   }
+
+   /* Barra de desplazamiento personalizada */
+   .sidebar-container::-webkit-scrollbar {
+     width: 8px;
+   }
+
+   .sidebar-container::-webkit-scrollbar-track {
+     background: rgba(255, 255, 255, 0.1);
+     border-radius: 10px;
+   }
+
+   .sidebar-container::-webkit-scrollbar-thumb {
+     background: rgba(108, 1, 1, 0.6);
+     border-radius: 10px;
+   }
+
+   .sidebar-container::-webkit-scrollbar-thumb:hover {
+     background: rgb(108, 1, 1);
    }
    
    .sidebar-container.oculto {
-     transform: translateX(-300px);
+     transform: translateX(-340px);
    }
    
    .informacion {
-     position: absolute;
-     top: 0;
-     left: 0;
-     width: 300px;
-     height: 100%;
+     position: relative;
+     width: 340px;
+     min-height: 100%;
      background-color: rgba(57, 0, 0, 0.735);
      color: #fff;
      backdrop-filter: blur(5px);
@@ -133,21 +166,25 @@
      padding: 20px 0;
    }
    
-   /* Botón tipo "hamburger" */
    .toggle-btn {
-     position: absolute;
-     top: 0;
-     left: 300px; /* Al borde derecho del panel */
+     position: fixed;
+     top: 90px;
+     left: 300px;
      width: 40px;
      height: 40px;
      background-color: rgb(108, 1, 1);
      border: none;
      border-radius: 0 4px 4px 0;
      cursor: pointer;
-     z-index: 9999;
+     z-index: 501;
      display: flex;
      align-items: center;
      justify-content: center;
+     transition: left 0.3s ease;
+   }
+   
+   .sidebar-container.oculto + .toggle-btn {
+     left: 0;
    }
    
    .hamburger {
@@ -181,7 +218,11 @@
    .main-container {
      position: relative;
      width: 100%;
-     height: calc(100% - 5em); /* Resta la altura de la navbar */
+     height: calc(100vh - 80px);
+     margin-top: 80px;
+     margin-bottom: 0;
+     padding: 0;
+     border: none;
    }
    
    .map-container {
@@ -191,12 +232,18 @@
      width: 100%;
      height: 100%;
      z-index: 1;
+     margin: 0;
+     padding: 0;
+     border: none;
    }
    
    #map {
      width: 100%;
      height: 100%;
      background-color: rgb(203, 203, 203);
+     margin: 0;
+     padding: 0;
+     border: none;
    }
    
    /* ======================================
@@ -299,6 +346,33 @@
      overflow: hidden;
      color: #000;
    }
+
+   /* ======================================
+      Sidebar Footer y botón consulta
+      ====================================== */
+   .sidebar-footer {
+     margin: 20px 1em 15px;
+     padding-bottom: 15px;
+   }
+
+   #consultaMapasBtn {
+     width: 100%;
+     padding: 12px;
+     font-size: 13px;
+     line-height: 1.3;
+     white-space: normal;
+     min-height: 45px;
+   }
+
+   /* Estilos para las capas base (Colonias, IDS, Zonas) */
+   .control-capas-panel .form-check {
+     margin-bottom: 8px;
+   }
+
+   .control-capas-panel .form-check-label {
+     font-size: 11px;
+     margin-left: 5px;
+   }
    
    .lista-capas {
     list-style: none;
@@ -308,23 +382,276 @@
     font-weight: 500 !important; /* Medium */
     font-size: 1em;
     color: #333;
+    width: 100%;
   }
    
   .lista-capas li {
-    display: flex;
-    align-items: center;
+    display: block;
     padding: 1px 0;
     font-family: 'Montserrat', sans-serif !important;
     font-weight: 500 !important;
+    width: 100%;
   }
    
    .lista-capas input[type="checkbox"] {
      margin-right: 8px;
    }
+
+   /* Estilos para el grupo de infraestructuras */
+   .lista-capas-infraestructura {
+     list-style: none;
+     padding-left: 0 !important;
+     margin: 0;
+     background-color: #f9f9f9;
+     border-left: 2px solid #922B21;
+     padding: 8px 0 8px 12px !important;
+     border-radius: 4px;
+     display: block;
+     width: 100%;
+   }
+
+   .lista-capas-infraestructura li {
+     padding: 4px 0;
+     font-size: 0.95em;
+     display: flex;
+     align-items: center;
+     flex-wrap: wrap;
+     width: 100%;
+   }
+
+   .lista-capas-infraestructura li input[type="checkbox"] {
+     flex-shrink: 0;
+   }
+
+   .lista-capas-infraestructura li label {
+     flex: 1;
+     word-wrap: break-word;
+     max-width: calc(100% - 30px);
+   }
+
+   /* Estilos para el grupo de equipamientos urbanos */
+   .lista-capas-equipamientos {
+     list-style: none;
+     padding-left: 0 !important;
+     margin: 0;
+     background-color: #f0f8ff;
+     border-left: 2px solid #1e5a8e;
+     padding: 8px 0 8px 12px !important;
+     border-radius: 4px;
+     display: block;
+     width: 100%;
+   }
+
+   .lista-capas-equipamientos li {
+     padding: 4px 0;
+     font-size: 0.95em;
+     display: flex;
+     align-items: center;
+     flex-wrap: wrap;
+     width: 100%;
+   }
+
+   .lista-capas-equipamientos li input[type="checkbox"] {
+     flex-shrink: 0;
+   }
+
+   .lista-capas-equipamientos li label {
+     flex: 1;
+     word-wrap: break-word;
+     max-width: calc(100% - 30px);
+   }
+
+   /* Estilos para los iconos emoji en el mapa */
+   .emoji-icon {
+     background: transparent !important;
+     border: none !important;
+     text-align: center;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+   }
+
+   .emoji-icon div {
+     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+   }
    
+   /* ======================================
+      Mensaje de rotación para móviles
+      ====================================== */
+   #rotation-message {
+     display: none;
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background-color: rgba(84, 0, 0, 0.98);
+     z-index: 10000;
+     justify-content: center;
+     align-items: center;
+     flex-direction: column;
+     color: white;
+     text-align: center;
+     padding: 20px;
+     font-family: 'Montserrat', sans-serif;
+   }
+
+   #rotation-message .rotation-icon {
+     font-size: 80px;
+     margin-bottom: 20px;
+     animation: rotate 2s infinite ease-in-out;
+   }
+
+   @keyframes rotate {
+     0%, 100% { transform: rotate(0deg); }
+     50% { transform: rotate(90deg); }
+   }
+
+   #rotation-message h2 {
+     font-size: 24px;
+     margin-bottom: 15px;
+     font-weight: 600;
+   }
+
+   #rotation-message p {
+     font-size: 16px;
+     font-weight: 400;
+   }
+
    /* ======================================
       Estilos Responsivos
       ====================================== */
+   
+   /* Tablets y pantallas medianas */
+   @media (max-width: 768px) {
+     .sidebar-container {
+       width: 85%;
+       max-width: 320px;
+       left: 0;
+       max-height: calc(100vh - 100px);
+       z-index: 400;
+     }
+
+     .toggle-btn {
+       left: 85%;
+       z-index: 401;
+     }
+
+     .sidebar-container.oculto + .toggle-btn {
+       left: 0;
+     }
+
+     .navbar {
+       min-height: 70px;
+     }
+
+     .navbar h1 {
+       font-size: 18px;
+     }
+
+     .logo {
+       width: 100px;
+     }
+
+     .lista-capas li {
+       font-size: 12px;
+     }
+
+     .form-check-label {
+       font-size: 11px !important;
+     }
+
+     .sidebar-footer {
+       margin: 15px 1em 10px;
+     }
+
+     #consultaMapasBtn {
+       padding: 10px;
+       font-size: 12px;
+       min-height: 40px;
+     }
+   }
+
+   /* Móviles pequeños */
+   @media (max-width: 480px) {
+     .sidebar-container {
+       width: 80%;
+       left: 0;
+       max-height: calc(100vh - 100px);
+       z-index: 400;
+     }
+
+     .toggle-btn {
+       left: 80%;
+       width: 35px;
+       height: 35px;
+       z-index: 401;
+     }
+
+     .sidebar-container.oculto + .toggle-btn {
+       left: 0;
+     }
+
+     .navbar {
+       padding: 0.3em 0.5em;
+       min-height: 60px;
+     }
+
+     .navbar h1 {
+       font-size: 14px;
+     }
+
+     .logo {
+       width: 80px;
+     }
+
+     .lista-capas li {
+       font-size: 11px;
+     }
+
+     .lista-capas img {
+       max-width: 18px !important;
+     }
+
+     .form-check-label {
+       font-size: 10px !important;
+     }
+
+     .control-capas-panel {
+       padding: 0.5em;
+       margin: 8px 0.5em 0;
+     }
+
+     .sidebar-footer {
+       margin: 12px 0.5em 8px;
+       padding-bottom: 10px;
+     }
+
+     #consultaMapasBtn {
+       padding: 8px;
+       font-size: 11px;
+       min-height: 38px;
+       line-height: 1.2;
+     }
+
+     /* Asegurar que los controles del mapa sean visibles */
+     .leaflet-control-container {
+       z-index: 600 !important;
+     }
+
+     .leaflet-control-zoom,
+     .leaflet-control-layers {
+       z-index: 600 !important;
+     }
+   }
+
+   /* Mostrar mensaje de rotación solo en orientación portrait en móviles */
+   @media screen and (max-width: 768px) and (orientation: portrait) {
+     #rotation-message {
+       display: flex !important;
+     }
+   }
+
    @media (max-width:300px) {
      .sidebar-container {
        width: 70%;
